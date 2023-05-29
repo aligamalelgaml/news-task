@@ -50,7 +50,6 @@ class CarouselController {
 
         this.initialRender(); 
 
-        // sub here
 
         this.view.bindCheckInfoEvent(this.flagClickHandler);
     }
@@ -85,7 +84,7 @@ class NewsModel {
             console.log(article);
             handler(article);
         });
-      }
+    }
 }
 
 class NewsView {
@@ -96,6 +95,10 @@ class NewsView {
         const rendered = Mustache.render(template, { title: data.title, description: data.description, image: data.urlToImage});
         $("#news-target").append(rendered);
     }
+
+    clearNews() {
+        $(".news-item").remove();
+    }
 }
 
 class NewsController {
@@ -105,6 +108,7 @@ class NewsController {
         this.mediator = mediator;
 
         this.mediator.subscribe(this.retreiveNews);
+
         this.initialRender();
     }
 
@@ -113,6 +117,7 @@ class NewsController {
     }
 
     retreiveNews = (country) => {
+        this.view.clearNews();
         this.model.getNews(country, this.view.renderNews);
     }
 }
@@ -139,9 +144,13 @@ class Mediator {
 }
 
 
-const mediator = new Mediator();
-const carousel = new CarouselController(new CarouselModel(), new CarouselView(), mediator);
-const news = new NewsController(new NewsModel("5ab4c464d7d949cb91e46dab12ef90b4"), new NewsView, mediator);
+$(document).ready(function() {
+    const mediator = new Mediator();
+    const carousel = new CarouselController(new CarouselModel(), new CarouselView(), mediator);
+    const news = new NewsController(new NewsModel("5ab4c464d7d949cb91e46dab12ef90b4"), new NewsView, mediator);
+});
+  
+
 
 
 
