@@ -1,3 +1,5 @@
+// import Mediator from "./Mediator.js";
+
 class CarouselModel {
     constructor() {
         this.flags = ["us", "gb", "ca", "eg"];
@@ -41,11 +43,14 @@ class CarouselView {
 }
 
 class CarouselController {
-    constructor(model, view){
+    constructor(model, view, mediator) {
         this.model = model;
         this.view = view;
+        this.mediator = mediator;
 
-        this.initialRender();
+        this.initialRender(); 
+
+        // sub here
 
         this.view.bindCheckInfoEvent(this.flagClickHandler);
     }
@@ -55,12 +60,12 @@ class CarouselController {
     }
 
     flagClickHandler = (flag) => {
-        console.log(flag + "is selected");
+        console.log(flag + " is selected"); //notify here
+        this.mediator.notify(flag);
     }
 
 }
 
-const carousel = new CarouselController(new CarouselModel(), new CarouselView());
 
 // ==== START OF NEWS MODULE ==== //
 
@@ -88,24 +93,56 @@ class NewsView {
 
     renderNews(data) {
         const template = $("#news-item-template").html();
-        const rendered = Mustache.render(template, { title: data.title, description: data.description });
+        const rendered = Mustache.render(template, { title: data.title, description: data.description, image: data.urlToImage});
         $("#news-target").append(rendered);
-
     }
 }
 
 class NewsController {
-    constructor(model, view) {
+    constructor(model, view, mediator) {
         this.model = model;
         this.view = view;
+        this.mediator = mediator;
 
+        this.mediator.subscribe(this.retreiveNews);
         this.initialRender();
     }
 
     initialRender() {
         this.model.getNews("us", this.view.renderNews);
     }
+
+    retreiveNews = (country) => {
+        this.model.getNews(country, this.view.renderNews);
+    }
 }
 
-const news = new NewsController(new NewsModel("5ab4c464d7d949cb91e46dab12ef90b4"), new NewsView);
+
+// ==== START OF MEDIATOR MODULE ==== //
+
+class Mediator {
+    constructor() {
+        this.observers = [];
+    }
+   
+    subscribe(func) {
+        this.observers.push(func);
+    }
+   
+    unsubscribe(func) {
+        this.observers = this.observers.filter((observer) => observer !== func);
+    }
+   
+    notify(data) {
+        this.observers.forEach((observer) => observer(data));
+    }
+}
+
+
+const mediator = new Mediator();
+const carousel = new CarouselController(new CarouselModel(), new CarouselView(), mediator);
+const news = new NewsController(new NewsModel("5ab4c464d7d949cb91e46dab12ef90b4"), new NewsView, mediator);
+
+
+
 
