@@ -1,29 +1,64 @@
 // import Mediator from "./Mediator.js";
 
+
 class CarouselModel {
+
     constructor() {
-        this.flags = ["us", "gb", "ca", "eg"];
+        this.flags = ["us", "gb", "ca", "eg"]; // All flags are saved as CCA2 codes in an array.
+        this.info = {};
+
+        this.retreiveInfo();
     }
 
     getFlags() {
         return this.flags;
     }
 
+    getInfo() {
+        return this.info;
+    }
+
+    retreiveInfo() {
+        const fetchPromises = this.flags.map(flag => {
+          return fetch(`https://restcountries.com/v3.1/alpha/${flag}`)
+            .then(response => response.json())
+            .then(countryInfo => {
+              this.info[flag] = countryInfo;
+            })
+            .catch(error => {
+              console.error(`Error fetching country info for ${flag}:`, error);
+            });
+        });
+      
+        return Promise.all(fetchPromises);
+      }
+      
+      
+
 }
 
 class CarouselView {
-    renderCarousel(flags) {
+    renderCarousel(flags, info) {
+
+        console.log(info);
+
 
         const template = $("#carousel-item-template").html();
 
         flags.forEach((flag, index) => {
+            const country = info[flag][0];
+            const capital = country.capital[0],
+                  population = country.population,
+                  area = country.area,
+                  offName = country.name.official;
+
             let rendered;
 
             if(index === 0) {
-                rendered = Mustache.render(template, { countryCode: flag, active: 'active' });
+                rendered = Mustache.render(template, { countryCode: flag, active: 'active', name: offName, capital: capital, pop: population, area: area });
 
             } else {
-                rendered = Mustache.render(template, { countryCode: flag, active: '' });
+                rendered = Mustache.render(template, { countryCode: flag, active: '', name: offName, capital: capital, pop: population, area: area  });
             }
 
             $("#carousel-target").append(rendered);
@@ -55,8 +90,12 @@ class CarouselController {
     }
 
     initialRender() {
-        this.view.renderCarousel(this.model.getFlags())
-    }
+        this.model.retreiveInfo()
+          .then(() => {
+            this.view.renderCarousel(this.model.getFlags(), this.model.getInfo());
+          });
+      }
+      
 
     flagClickHandler = (flag) => {
         console.log(flag + " is selected"); //notify here
@@ -81,7 +120,6 @@ class NewsModel {
         let data = await response.json(); // read response body and parse as JSON
 
         data.articles.forEach(article => {
-            console.log(article);
             handler(article);
         });
     }

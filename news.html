@@ -23,9 +23,14 @@
                         <script id="carousel-item-template" type="x-tmpl-mustache">
                             <div class="carousel-item {{active}}">
                                 <img src="./img/{{countryCode}}.png" class="country-image d-block w-100" alt="flag of {{countryCode}}" data-country-code="{{countryCode}}">
-                                <div class="carousel-caption d-none d-md-block bg-black opacity-75">
-                                    <h5>First slide label</h5>
-                                    <p>Some representative placeholder content for the first slide.</p>
+                                <div class="carousel-caption d-none d-md-block bg-black opacity-75 text-center">
+                                    <h4 class="fw-bold">{{name}}</h4>
+                                    <ul>
+                                        <li>Capital: {{capital}}</li>
+                                        <li>Population: {{pop}}</li>
+                                        <li>Total Area: {{area}}</li>
+                                        <li>Population: {{pop}}</li>
+                                    </ul>
                                   </div>
                             </div>
                         </script>
